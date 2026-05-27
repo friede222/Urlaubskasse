@@ -3,52 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urlaubskasse Deluxe</title>
+    <title>Urlaubskasse Deluxe — Cloud</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Lucide Icons für schicke Symbole -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-slate-50 font-sans text-slate-800 min-h-screen flex flex-col">
 
-    <!-- NAVIGATION HEADER -->
+    <div id="login-overlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-999 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4 border border-slate-100">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="lock" class="w-6 h-6"></i>
+                </div>
+                <h2 class="text-xl font-bold text-slate-800">Urlaubskasse geschützt</h2>
+                <p class="text-xs text-slate-400 mt-1">Gib das gemeinsame Passwort eurer Reisegruppe ein.</p>
+            </div>
+            <form id="loginForm" class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Gruppen-Passwort</label>
+                    <input type="password" id="groupPassword" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-indigo-500" placeholder="z.B. Mallorca2026!">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg text-sm transition shadow-sm flex justify-center items-center gap-2">
+                    <i data-lucide="unlock"></i> Freischalten
+                </button>
+            </form>
+        </div>
+    </div>
+
     <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-5xl mx-auto px-4 flex justify-between items-center h-16">
             <div class="flex items-center gap-2 font-bold text-lg tracking-wide">
                 <i data-lucide="palm-tree" class="w-6 h-6 text-amber-300"></i>
-                <span>Urlaubskasse</span>
+                <span>Urlaubskasse <span class="text-xs bg-emerald-500 text-white px-1.5 py-0.5 rounded-full ml-1">Cloud</span></span>
             </div>
-            
-            <!-- Mobile/Desktop Nav Links -->
-            <nav class="flex space-x-1 md:space-x-2 text-sm font-medium">
+            <nav class="flex space-x-1 text-sm font-medium">
                 <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-3 py-2 rounded-lg transition bg-indigo-700 flex items-center gap-1">
-                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                    <span class="hidden sm:inline">Start</span>
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i><span class="hidden sm:inline">Start</span>
                 </button>
                 <button onclick="switchTab('families')" id="nav-families" class="nav-btn px-3 py-2 rounded-lg transition hover:bg-indigo-500 flex items-center gap-1">
-                    <i data-lucide="users" class="w-4 h-4"></i>
-                    <span class="hidden sm:inline">Familien</span>
+                    <i data-lucide="users" class="w-4 h-4"></i><span class="hidden sm:inline">Familien</span>
                 </button>
                 <button onclick="switchTab('expenses')" id="nav-expenses" class="nav-btn px-3 py-2 rounded-lg transition hover:bg-indigo-500 flex items-center gap-1">
-                    <i data-lucide="receipt" class="w-4 h-4"></i>
-                    <span class="hidden sm:inline">Ausgaben</span>
+                    <i data-lucide="receipt" class="w-4 h-4"></i><span class="hidden sm:inline">Ausgaben</span>
                 </button>
                 <button onclick="switchTab('reports')" id="nav-reports" class="nav-btn px-3 py-2 rounded-lg transition hover:bg-indigo-500 flex items-center gap-1">
-                    <i data-lucide="pie-chart" class="w-4 h-4"></i>
-                    <span class="hidden sm:inline">Report</span>
+                    <i data-lucide="pie-chart" class="w-4 h-4"></i><span class="hidden sm:inline">Report</span>
                 </button>
             </nav>
         </div>
     </header>
 
-    <!-- HAUPTINHALT (DYNAMISCHE SEITEN) -->
     <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6">
         
-        <!-- ================= UNTERSEITE 1: DASHBOARD ================= -->
         <section id="page-dashboard" class="tab-content space-y-6">
             <div class="bg-gradient-to-r from-indigo-600 to-violet-700 rounded-2xl p-6 text-white shadow-lg">
                 <h1 class="text-2xl font-bold mb-1">Hallo im Urlaub! 👋</h1>
-                <p class="text-indigo-100 text-sm">Hier ist der aktuelle Finanzstatus eurer Reisegruppe.</p>
-                
+                <p class="text-indigo-100 text-sm">Finanzstatus eurer Reisegruppe (Echtzeit-Cloud-Synchronisiert).</p>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
                     <div class="bg-white/10 backdrop-blur-md p-4 rounded-xl">
                         <span class="text-xs uppercase tracking-wider text-indigo-200 block mb-1">Gesamtausgaben</span>
@@ -64,107 +75,88 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Schnellübersicht Info-Boxen -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                    <h3 class="font-bold text-slate-700 mb-3 flex items-center gap-2">
-                        <i data-lucide="trending-up" class="w-5 h-5 text-emerald-500"></i> Höchste Einzel-Ausgabe
-                    </h3>
-                    <div id="dash-highest-expense" class="text-slate-500 italic text-sm py-2">Noch keine Ausgaben vorhanden.</div>
+                    <h3 class="font-bold text-slate-700 mb-3 flex items-center gap-2"><i data-lucide="trending-up" class="w-5 h-5 text-emerald-500"></i> Höchste Einzel-Ausgabe</h3>
+                    <div id="dash-highest-expense" class="text-slate-500 italic text-sm py-2">Warte auf Daten...</div>
                 </div>
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col justify-between">
                     <div>
-                        <h3 class="font-bold text-slate-700 mb-2 flex items-center gap-2">
-                            <i data-lucide="info" class="w-5 h-5 text-indigo-500"></i> Berechnungshinweis
-                        </h3>
-                        <p class="text-xs text-slate-500 leading-relaxed">
-                            Kosten werden vollautomatisch gewichtet geteilt: Ein Erwachsener zählt als <strong class="text-slate-700">1.0 Anteil</strong>, ein Kind schlägt mit <strong class="text-slate-700">0.5 Anteilen</strong> zu Buche.
-                        </p>
+                        <h3 class="font-bold text-slate-700 mb-2 flex items-center gap-2"><i data-lucide="info" class="w-5 h-5 text-indigo-500"></i> Live-Synchronisation</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed">Diese App ist live mit eurer Cloud-Datenbank verbunden. Änderungen von anderen Handys erscheinen automatisch in Sekundenschnelle bei allen.</p>
                     </div>
-                    <button onclick="switchTab('expenses')" class="mt-4 w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 rounded-lg text-xs transition flex justify-center items-center gap-1">
-                        Neue Ausgabe eintragen <i data-lucide="arrow-right" class="w-3 h-3"></i>
-                    </button>
                 </div>
             </div>
         </section>
 
-        <!-- ================= UNTERSEITE 2: FAMILIEN VERWALTEN ================= -->
         <section id="page-families" class="tab-content space-y-6 hidden">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Formular -->
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 h-fit">
                     <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-700"><i data-lucide="user-plus" class="w-5 h-5 text-indigo-500"></i> Familie hinzufügen</h2>
                     <form id="familyForm" class="space-y-4">
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Name der Familie</label>
-                            <input type="text" id="familyName" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-indigo-500 text-sm" placeholder="z.B. Familie Müller">
+                            <input type="text" id="familyName" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-indigo-500" placeholder="z.B. Familie Müller">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Erwachsene (1x)</label>
-                                <input type="number" id="adults" min="1" value="2" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-indigo-500 text-sm">
+                                <input type="number" id="adults" min="1" value="2" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-indigo-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Kinder (0.5x)</label>
-                                <input type="number" id="kids" min="0" value="0" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-indigo-500 text-sm">
+                                <input type="number" id="kids" min="0" value="0" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-indigo-500">
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-lg text-sm transition shadow-sm flex justify-center items-center gap-1">
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-lg text-sm transition flex justify-center items-center gap-1">
                             <i data-lucide="plus" class="w-4 h-4"></i> Familie speichern
                         </button>
                     </form>
                 </div>
-                <!-- Liste -->
                 <div class="md:col-span-2 bg-white p-5 rounded-xl shadow-sm border border-slate-200">
                     <h2 class="text-lg font-bold mb-4 text-slate-700">Registrierte Familien</h2>
-                    <div id="familiesList" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <!-- Dynamisch -->
-                    </div>
+                    <div id="familiesList" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
                 </div>
             </div>
         </section>
 
-        <!-- ================= UNTERSEITE 3: AUSGABEN ERFASSEN ================= -->
         <section id="page-expenses" class="tab-content space-y-6 hidden">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Formular -->
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 h-fit">
                     <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-700" id="expense-form-title"><i data-lucide="circle-plus" class="w-5 h-5 text-emerald-500"></i> Ausgabe erfassen</h2>
                     <form id="expenseForm" class="space-y-4">
                         <input type="hidden" id="expenseId">
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Bezeichnung</label>
-                            <input type="text" id="expenseDesc" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-indigo-500 text-sm" placeholder="z.B. Tanken, Restaurant">
+                            <input type="text" id="expenseDesc" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-indigo-500" placeholder="z.B. Tanken, Einkaufen">
                         </div>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Betrag in €</label>
-                                <input type="number" id="expenseAmount" step="0.01" min="0.01" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-indigo-500 text-sm" placeholder="0.00">
+                                <input type="number" id="expenseAmount" step="0.01" min="0.01" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-indigo-500" placeholder="0.00">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Datum</label>
-                                <input type="date" id="expenseDate" required class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-indigo-500 text-sm">
+                                <input type="date" id="expenseDate" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-indigo-500">
                             </div>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Wer hat bezahlt?</label>
-                            <select id="expensePayer" required class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white focus:outline-indigo-500 text-sm">
-                                <option value="" disabled selected>Bitte Familie wählen...</option>
+                            <select id="expensePayer" required class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-sm focus:outline-indigo-500">
+                                <option value="" disabled selected>Warte auf Familien...</option>
                             </select>
                         </div>
                         <div class="flex gap-2 pt-2">
-                            <button type="submit" id="submitExpenseBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg text-sm transition shadow-sm">Ausgabe eintragen</button>
+                            <button type="submit" id="submitExpenseBtn" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg text-sm transition">Ausgabe eintragen</button>
                             <button type="button" id="cancelEditBtn" class="hidden bg-slate-400 hover:bg-slate-500 text-white font-medium px-3 py-2 rounded-lg text-sm transition">Abbrechen</button>
                         </div>
                     </form>
                 </div>
-                <!-- Liste -->
                 <div class="md:col-span-2 bg-white p-5 rounded-xl shadow-sm border border-slate-200">
                     <h2 class="text-lg font-bold mb-4 text-slate-700">Chronologische Ausgabenliste</h2>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-50 text-slate-500 uppercase text-xs font-semibold border-b border-slate-200">
+                            <thead class="bg-slate-50 text-slate-500 uppercase text-xs border-b border-slate-200">
                                 <tr>
                                     <th class="p-3">Datum</th>
                                     <th class="p-3">Beschreibung</th>
@@ -173,34 +165,27 @@
                                     <th class="p-3 text-center">Aktionen</th>
                                 </tr>
                             </thead>
-                            <tbody id="expensesTableBody" class="divide-y divide-slate-100">
-                                <!-- Dynamisch -->
-                            </tbody>
+                            <tbody id="expensesTableBody" class="divide-y divide-slate-100"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ================= UNTERSEITE 4: REPORT & ABRECHNUNG ================= -->
         <section id="page-reports" class="tab-content space-y-6 hidden">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-slate-100 pb-4 mb-6 gap-2">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-700 flex items-center gap-2">
-                            <i data-lucide="calculator" class="w-5 h-5 text-indigo-500"></i> Kassensturz & Endabrechnung
-                        </h2>
-                        <p class="text-slate-400 text-xs mt-0.5">Übersicht der Ausgabenanteile basierend auf der Personengewichtung.</p>
+                        <h2 class="text-xl font-bold text-slate-700 flex items-center gap-2"><i data-lucide="calculator" class="w-5 h-5 text-indigo-500"></i> Kassensturz & Endabrechnung</h2>
                     </div>
                     <div class="text-right sm:bg-slate-50 sm:px-4 sm:py-2 rounded-lg">
                         <span class="text-xs text-slate-400 block uppercase font-medium">Gesamt-Gewichtung</span>
                         <span class="text-lg font-bold text-indigo-600" id="report-total-shares">0.0 Anteile</span>
                     </div>
                 </div>
-
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-50 text-slate-500 uppercase text-xs font-semibold border-b border-slate-200">
+                        <thead class="bg-slate-50 text-slate-500 uppercase text-xs border-b border-slate-200">
                             <tr>
                                 <th class="p-3">Familie</th>
                                 <th class="p-3 text-center">Gewichtung (E/K)</th>
@@ -209,65 +194,90 @@
                                 <th class="p-3 text-right">Differenz (+/-)</th>
                             </tr>
                         </thead>
-                        <tbody id="reportTableBody" class="divide-y divide-slate-100">
-                            <!-- Dynamisch -->
-                        </tbody>
+                        <tbody id="reportTableBody" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
-
-            <!-- Datenverwaltung ganz unten auf der Report-Seite -->
             <div class="bg-slate-100 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-3">
-                <span>Die Daten werden automatisch im Browser dieses Geräts gesichert.</span>
-                <button onclick="clearAllData()" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg font-medium transition flex items-center gap-1 border border-red-200 shadow-xs">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Alle App-Daten zurücksetzen
+                <span>App-Sperre auf diesem Gerät aufheben:</span>
+                <button onclick="logoutDatabase()" class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg font-medium transition border border-red-200">
+                    Abmelden
                 </button>
             </div>
         </section>
-
     </main>
 
-    <!-- FOOTER -->
-    <footer class="bg-slate-800 text-slate-400 text-center py-4 text-xs mt-auto border-t border-slate-700">
-        🌴 Urlaubskassen-Rechner &copy; 2026 — Lokal einsatzbereit
-    </footer>
-
-    <!-- JAVASCRIPT-LOGIK -->
     <script>
-        // Datenstrukturen
-        let families = JSON.parse(localStorage.getItem('families')) || [];
-        let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
+        const SUPABASE_URL = "https://sufxqbmrfkyxxrdogfbg.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_wWRRkfBhWQILbSR6wrqYfg_OXL4Pny5";
+
+        let supabaseClient = null;
+        let groupPass = "";
+        let families = [];
+        let expenses = [];
         let isEditingId = null;
 
-        // Formulare & Elemente
-        const familyForm = document.getElementById('familyForm');
-        const expenseForm = document.getElementById('expenseForm');
         const expensePayerSelect = document.getElementById('expensePayer');
-        const reportTableBody = document.getElementById('reportTableBody');
-        const expensesTableBody = document.getElementById('expensesTableBody');
-        const familiesList = document.getElementById('familiesList');
-
-        // Datum vorbelegen
         document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
 
-        // TAB NAVIGATION LOGIK
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedPass = localStorage.getItem('cfg_pass_v2');
+            if(savedPass) {
+                // Wenn Passwort existiert, einblenden überspringen & direkt laden
+                document.getElementById('login-overlay').classList.add('hidden');
+                initSupabase(savedPass);
+            }
+            // Falls kein Passwort da ist, bleibt das Overlay wie gewünscht sichtbar
+            lucide.createIcons();
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pass = document.getElementById('groupPassword').value.trim();
+            localStorage.setItem('cfg_pass_v2', pass);
+            document.getElementById('login-overlay').classList.add('hidden');
+            initSupabase(pass);
+        });
+
+        function initSupabase(pass) {
+            groupPass = pass;
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            fetchData();
+            supabaseClient
+                .channel('schema-db-changes')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'families' }, () => fetchData())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => fetchData())
+                .subscribe();
+        }
+
+        async function fetchData() {
+            if(!supabaseClient) return;
+            try {
+                const { data: famData, error: err1 } = await supabaseClient.from('families').select('*').eq('group_password', groupPass);
+                const { data: expData, error: err2 } = await supabaseClient.from('expenses').select('*').eq('group_password', groupPass);
+                if(!err1 && famData) families = famData;
+                if(!err2 && expData) expenses = expData;
+                updateUI();
+            } catch (e) {
+                console.error("Fehler beim Laden:", e);
+            }
+        }
+
+        function logoutDatabase() {
+            if(confirm("Möchtest du dich abmelden? Du musst das Gruppen-Passwort danach erneut eingeben.")) {
+                localStorage.removeItem('cfg_pass_v2');
+                window.location.reload();
+            }
+        }
+
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(page => page.classList.add('hidden'));
             document.getElementById(`page-${tabId}`).classList.remove('hidden');
-
             document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('bg-indigo-700');
-                btn.classList.add('hover:bg-indigo-500');
+                btn.classList.remove('bg-indigo-700'); btn.classList.add('hover:bg-indigo-500');
             });
             document.getElementById(`nav-${tabId}`).classList.add('bg-indigo-700');
             document.getElementById(`nav-${tabId}`).classList.remove('hover:bg-indigo-500');
-            
-            updateUI();
-        }
-
-        function saveData() {
-            localStorage.setItem('families', JSON.stringify(families));
-            localStorage.setItem('expenses', JSON.stringify(expenses));
             updateUI();
         }
 
@@ -275,115 +285,78 @@
             return parseFloat(fam.adults) * 1.0 + parseFloat(fam.kids) * 0.5;
         }
 
-        familyForm.addEventListener('submit', (e) => {
+        document.getElementById('familyForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('familyName').value.trim();
             const adults = parseInt(document.getElementById('adults').value);
             const kids = parseInt(document.getElementById('kids').value);
-
             if (families.some(f => f.name.toLowerCase() === name.toLowerCase())) {
-                alert('Eine Familie mit diesem Namen existiert bereits.');
-                return;
+                alert('Diese Familie existiert bereits.'); return;
             }
-
-            families.push({ id: Date.now().toString(), name, adults, kids });
-            familyForm.reset();
-            saveData();
+            await supabaseClient.from('families').insert([{ name, adults, kids, group_password: groupPass }]);
+            document.getElementById('familyForm').reset();
+            fetchData();
         });
 
-        expenseForm.addEventListener('submit', (e) => {
+        document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const desc = document.getElementById('expenseDesc').value.trim();
             const amount = parseFloat(document.getElementById('expenseAmount').value);
             const date = document.getElementById('expenseDate').value;
             const payerId = expensePayerSelect.value;
-
             if (isEditingId) {
-                const index = expenses.findIndex(exp => exp.id === isEditingId);
-                if (index !== -1) {
-                    expenses[index] = { id: isEditingId, desc, amount, date, payerId };
-                }
+                await supabaseClient.from('expenses').update({ description: desc, amount, date, payer_id: payerId }).eq('id', isEditingId);
                 isEditingId = null;
                 document.getElementById('submitExpenseBtn').innerText = "Ausgabe eintragen";
-                document.getElementById('expense-form-title').innerHTML = `<i data-lucide="circle-plus" class="w-5 h-5 text-emerald-500"></i> Ausgabe erfassen`;
                 document.getElementById('cancelEditBtn').classList.add('hidden');
             } else {
-                expenses.push({ id: Date.now().toString(), desc, amount, date, payerId });
+                await supabaseClient.from('expenses').insert([{ description: desc, amount, date, payer_id: payerId, group_password: groupPass }]);
             }
-
-            expenseForm.reset();
+            document.getElementById('expenseForm').reset();
             document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
-            saveData();
-            lucide.createIcons();
+            fetchData();
         });
 
-        document.getElementById('cancelEditBtn').addEventListener('click', () => {
-            isEditingId = null;
-            expenseForm.reset();
-            document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
-            document.getElementById('submitExpenseBtn').innerText = "Ausgabe eintragen";
-            document.getElementById('expense-form-title').innerHTML = `<i data-lucide="circle-plus" class="w-5 h-5 text-emerald-500"></i> Ausgabe erfassen`;
-            document.getElementById('cancelEditBtn').classList.add('hidden');
-            lucide.createIcons();
-        });
-
-        function deleteExpense(id) {
-            if(confirm("Möchtest du diese Ausgabe wirklich löschen?")) {
-                expenses = expenses.filter(exp => exp.id !== id);
-                if (isEditingId === id) {
-                    isEditingId = null;
-                    expenseForm.reset();
-                    document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
-                    document.getElementById('submitExpenseBtn').innerText = "Ausgabe eintragen";
-                    document.getElementById('cancelEditBtn').classList.add('hidden');
-                }
-                saveData();
+        async function deleteExpense(id) {
+            if(confirm("Ausgabe wirklich löschen?")) {
+                await supabaseClient.from('expenses').delete().eq('id', id);
+                fetchData();
             }
         }
 
         function editExpense(id) {
             const exp = expenses.find(e => e.id === id);
             if (!exp) return;
-
             isEditingId = id;
-            document.getElementById('expenseDesc').value = exp.desc;
+            document.getElementById('expenseDesc').value = exp.description;
             document.getElementById('expenseAmount').value = exp.amount;
             document.getElementById('expenseDate').value = exp.date;
-            expensePayerSelect.value = exp.payerId;
-
-            document.getElementById('submitExpenseBtn').innerText = "Änderung保存";
-            document.getElementById('expense-form-title').innerHTML = `<i data-lucide="pencil" class="w-5 h-5 text-amber-500"></i> Ausgabe bearbeiten`;
+            expensePayerSelect.value = exp.payer_id;
+            document.getElementById('submitExpenseBtn').innerText = "Änderung speichern";
             document.getElementById('cancelEditBtn').classList.remove('hidden');
-            lucide.createIcons();
         }
 
-        function deleteFamily(id) {
-            if (expenses.some(exp => exp.payerId === id)) {
-                alert("Diese Familie kann nicht gelöscht werden, da sie noch in Ausgaben als Zahler eingetragen ist!");
-                return;
-            }
-            if(confirm("Familie wirklich löschen?")) {
-                families = families.filter(f => f.id !== id);
-                saveData();
-            }
-        }
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            isEditingId = null;
+            document.getElementById('expenseForm').reset();
+            document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
+            document.getElementById('submitExpenseBtn').innerText = "Ausgabe eintragen";
+            document.getElementById('cancelEditBtn').classList.add('hidden');
+        });
 
-        function clearAllData() {
-            if(confirm("Bist du sicher, dass du alle Familien und Ausgaben löschen willst?")) {
-                families = [];
-                expenses = [];
-                isEditingId = null;
-                expenseForm.reset();
-                document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
-                saveData();
-                switchTab('dashboard');
+        async function deleteFamily(id) {
+            if (expenses.some(exp => exp.payer_id === id)) {
+                alert("Familie kann nicht gelöscht werden, da sie noch Ausgaben ausstehend hat!"); return;
+            }
+            if(confirm("Familie löschen?")) {
+                await supabaseClient.from('families').delete().eq('id', id);
+                fetchData();
             }
         }
 
         function updateUI() {
-            const totalCosts = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+            const totalCosts = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
             const totalShares = families.reduce((sum, f) => sum + calculateFamilyShares(f), 0);
-
             document.getElementById('dash-total-costs').innerText = totalCosts.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
             document.getElementById('dash-family-count').innerText = families.length;
             document.getElementById('dash-expense-count').innerText = expenses.length;
@@ -391,120 +364,88 @@
             const dashHighest = document.getElementById('dash-highest-expense');
             if (expenses.length > 0) {
                 const highest = [...expenses].sort((a, b) => b.amount - a.amount)[0];
-                const payerFam = families.find(f => f.id === highest.payerId);
+                const payerFam = families.find(f => f.id === highest.payer_id);
                 dashHighest.innerHTML = `
                     <div class="flex justify-between items-center pt-1">
                         <div>
-                            <span class="font-semibold text-slate-800 text-base block">${highest.desc}</span>
-                            <span class="text-xs text-slate-400">Bezahlt von: ${payerFam ? payerFam.name : 'Unbekannt'}</span>
+                            <span class="font-semibold text-slate-800 text-base block">${highest.description}</span>
+                            <span class="text-xs text-slate-400">Zahler: ${payerFam ? payerFam.name : 'Unbekannt'}</span>
                         </div>
-                        <span class="text-lg font-bold text-rose-600">-${highest.amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
+                        <span class="text-lg font-bold text-rose-600">-${parseFloat(highest.amount).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>
                     </div>`;
-            } else {
-                dashHighest.innerText = "Noch keine Ausgaben vorhanden.";
-            }
+            } else { dashHighest.innerText = "Keine Ausgaben."; }
 
             const currentPayer = expensePayerSelect.value;
             expensePayerSelect.innerHTML = '<option value="" disabled selected>Bitte Familie wählen...</option>';
             families.forEach(f => {
-                const opt = document.createElement('option');
-                opt.value = f.id;
-                opt.textContent = f.name;
+                const opt = document.createElement('option'); opt.value = f.id; opt.textContent = f.name;
                 expensePayerSelect.appendChild(opt);
             });
-            if (families.some(f => f.id === currentPayer)) {
-                expensePayerSelect.value = currentPayer;
-            }
+            if (families.some(f => f.id === currentPayer)) expensePayerSelect.value = currentPayer;
 
+            const familiesList = document.getElementById('familiesList');
             familiesList.innerHTML = '';
-            if (families.length === 0) {
-                familiesList.innerHTML = '<div class="text-slate-400 text-sm italic col-span-2 py-4">Noch keine Familien angelegt. Nutze das Formular links!</div>';
-            }
             families.forEach(f => {
-                const shares = calculateFamilyShares(f);
                 const card = document.createElement('div');
-                card.className = "border border-slate-200 bg-slate-50 p-4 rounded-xl flex justify-between items-center shadow-xs";
+                card.className = "border border-slate-200 bg-slate-50 p-4 rounded-xl flex justify-between items-center";
                 card.innerHTML = `
                     <div>
                         <h4 class="font-bold text-slate-800">${f.name}</h4>
-                        <p class="text-xs text-slate-500 mt-0.5">👥 ${f.adults} Erw. / ${f.kids} Kinder</p>
-                        <span class="inline-block bg-indigo-50 text-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded-md mt-2">Gewichtung: ${shares.toFixed(1)}</span>
+                        <p class="text-xs text-slate-500">👥 ${f.adults} Erw. / ${f.kids} Kinder</p>
                     </div>
-                    <button onclick="deleteFamily('${f.id}')" class="text-slate-400 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition">
-                        <i data-lucide="trash" class="w-4 h-4"></i>
-                    </button>
-                `;
+                    <button onclick="deleteFamily('${f.id}')" class="text-slate-400 hover:text-red-500 p-2 rounded-lg transition"><i data-lucide="trash" class="w-4 h-4"></i></button>`;
                 familiesList.appendChild(card);
             });
 
+            const expensesTableBody = document.getElementById('expensesTableBody');
             expensesTableBody.innerHTML = '';
-            if (expenses.length === 0) {
-                expensesTableBody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 italic">Noch keine Ausgaben erfasst.</td></tr>`;
-            } else {
-                const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
-                sortedExpenses.forEach(exp => {
-                    const payer = families.find(f => f.id === exp.payerId);
-                    const dateObj = new Date(exp.date);
-                    const formattedDate = isNaN(dateObj) ? exp.date : dateObj.toLocaleDateString('de-DE');
-
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50/80 transition-colors";
-                    tr.innerHTML = `
-                        <td class="p-3 text-slate-500 font-medium whitespace-nowrap">${formattedDate}</td>
-                        <td class="p-3 font-semibold text-slate-800">${exp.desc}</td>
-                        <td class="p-3"><span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-xs font-medium">${payer ? payer.name : "Gelöscht"}</span></td>
-                        <td class="p-3 text-right font-bold text-slate-900">${exp.amount.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
-                        <td class="p-3 text-center space-x-1 whitespace-nowrap">
-                            <button onclick="editExpense('${exp.id}')" class="text-amber-600 hover:bg-amber-50 p-1.5 rounded-md transition"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                            <button onclick="deleteExpense('${exp.id}')" class="text-red-600 hover:bg-red-50 p-1.5 rounded-md transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </td>
-                    `;
-                    expensesTableBody.appendChild(tr);
-                });
+            if(expenses.length === 0) {
+                expensesTableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center italic text-slate-400">Keine Belege vorhanden.</td></tr>`;
             }
-
-            document.getElementById('report-total-shares').innerText = `${totalShares.toFixed(1)} Anteile`;
-            reportTableBody.innerHTML = '';
-            
-            let paidByFamily = {};
-            families.forEach(f => paidByFamily[f.id] = 0);
-            expenses.forEach(exp => {
-                if (paidByFamily[exp.payerId] !== undefined) {
-                    paidByFamily[exp.payerId] += exp.amount;
-                }
+            [...expenses].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(exp => {
+                const payer = families.find(f => f.id === exp.payer_id);
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/50";
+                tr.innerHTML = `
+                    <td class="p-3 text-slate-500">${new Date(exp.date).toLocaleDateString('de-DE')}</td>
+                    <td class="p-3 font-semibold text-slate-800">${exp.description}</td>
+                    <td class="p-3"><span class="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-xs">${payer ? payer.name : "Gelöscht"}</span></td>
+                    <td class="p-3 text-right font-bold">${parseFloat(exp.amount).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
+                    <td class="p-3 text-center space-x-1">
+                        <button onclick="editExpense('${exp.id}')" class="text-amber-600 p-1"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                        <button onclick="deleteExpense('${exp.id}')" class="text-red-600 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>`;
+                expensesTableBody.appendChild(tr);
             });
 
-            if (families.length === 0) {
-                reportTableBody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400 italic">Füge unter "Familien" Mitglieder hinzu.</td></tr>`;
-            } else {
-                families.forEach(f => {
-                    const famShares = calculateFamilyShares(f);
-                    const targetCost = totalShares > 0 ? (totalCosts / totalShares) * famShares : 0;
-                    const paid = paidByFamily[f.id] || 0;
-                    const diff = paid - targetCost;
+            document.getElementById('report-total-shares').innerText = `${totalShares.toFixed(1)} Anteile`;
+            const reportTableBody = document.getElementById('reportTableBody');
+            reportTableBody.innerHTML = '';
 
-                    const tr = document.createElement('tr');
-                    
-                    let diffClass = "text-slate-500 font-medium";
-                    let prefix = "";
-                    if (diff > 0.01) { diffClass = "text-emerald-600 font-bold bg-emerald-50/50 rounded"; prefix = "+"; }
-                    if (diff < -0.01) { diffClass = "text-rose-600 font-bold bg-rose-50/50 rounded"; }
+            let paidByFamily = {};
+            families.forEach(f => paidByFamily[f.id] = 0);
+            expenses.forEach(exp => { if (paidByFamily[exp.payer_id] !== undefined) paidByFamily[exp.payer_id] += parseFloat(exp.amount); });
 
-                    tr.innerHTML = `
-                        <td class="p-3 font-bold text-slate-800">${f.name}</td>
-                        <td class="p-3 text-center text-slate-500 font-medium">${f.adults} E / ${f.kids} K</td>
-                        <td class="p-3 text-right text-slate-700 font-medium">${paid.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
-                        <td class="p-3 text-right text-slate-500">${targetCost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
-                        <td class="p-3 text-right"><span class="px-2 py-1 ${diffClass}">${prefix}${diff.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span></td>
-                    `;
-                    reportTableBody.appendChild(tr);
-                });
-            }
+            families.forEach(f => {
+                const famShares = calculateFamilyShares(f);
+                const targetCost = totalShares > 0 ? (totalCosts / totalShares) * famShares : 0;
+                const paid = paidByFamily[f.id] || 0;
+                const diff = paid - targetCost;
+                const tr = document.createElement('tr');
+                let diffClass = "text-slate-500"; let prefix = "";
+                if (diff > 0.01) { diffClass = "text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded"; prefix = "+"; }
+                if (diff < -0.01) { diffClass = "text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded"; }
 
+                tr.innerHTML = `
+                    <td class="p-3 font-bold">${f.name}</td>
+                    <td class="p-3 text-center">${f.adults} E / ${f.kids} K</td>
+                    <td class="p-3 text-right">${paid.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
+                    <td class="p-3 text-right text-slate-400">${targetCost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
+                    <td class="p-3 text-right"><span class="${diffClass}">${prefix}${diff.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span></td>`;
+                reportTableBody.appendChild(tr);
+            });
             lucide.createIcons();
         }
-
-        updateUI();
     </script>
 </body>
 </html>
