@@ -97,8 +97,9 @@
         <section id="page-families" class="tab-content space-y-6 hidden">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 h-fit">
-                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-700"><i data-lucide="user-plus" class="w-5 h-5 text-indigo-500"></i> Familie hinzufügen</h2>
+                    <h2 id="familyFormTitle" class="text-lg font-bold mb-4 flex items-center gap-2 text-slate-700"><i data-lucide="user-plus" class="w-5 h-5 text-indigo-500"></i> Familie hinzufügen</h2>
                     <form id="familyForm" class="space-y-4">
+                        <input type="hidden" id="familyId">
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Name der Familie</label>
                             <input type="text" id="familyName" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-indigo-500" placeholder="z.B. Familie Müller">
@@ -113,9 +114,12 @@
                                 <input type="number" id="kids" min="0" value="0" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-indigo-500">
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-lg text-sm transition flex justify-center items-center gap-1">
-                            <i data-lucide="plus" class="w-4 h-4"></i> Familie speichern
-                        </button>
+                        <div class="flex gap-2">
+                            <button type="submit" id="saveFamilyBtn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-lg text-sm transition flex justify-center items-center gap-1">
+                                <i data-lucide="plus" class="w-4 h-4"></i> Familie speichern
+                            </button>
+                            <button type="button" id="cancelFamilyEditBtn" class="hidden bg-slate-400 hover:bg-slate-500 text-white font-medium py-2 rounded-lg text-sm transition">Abbrechen</button>
+                        </div>
                     </form>
                 </div>
                 <div class="md:col-span-2 bg-white p-5 rounded-xl shadow-sm border border-slate-200">
@@ -221,6 +225,7 @@
         let families = [];
         let expenses = [];
         let isEditingId = null;
+        let isFamilyEditingId = null;
 
         const expensePayerSelect = document.getElementById('expensePayer');
         document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
@@ -285,7 +290,7 @@
             try {
                 const { data: famData, error: err1 } = await supabaseClient.from('families').select('*').eq('group_password', groupPass);
                 const { data: expData, error: err2 } = await supabaseClient.from('expenses').select('*').eq('group_password', groupPass);
-                if(!err1 && famData) families = famData;
+                if(!err1 && famData) families = famData.sort((a, b) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' }));
                 if(!err2 && expData) expenses = expData;
                 updateUI();
             } catch (e) {
@@ -320,8 +325,20 @@
             const name = document.getElementById('familyName').value.trim();
             const adults = parseInt(document.getElementById('adults').value);
             const kids = parseInt(document.getElementById('kids').value);
-            await supabaseClient.from('families').insert([{ name, adults, kids, group_password: groupPass }]);
+            const familyId = document.getElementById('familyId').value;
+
+            if (isFamilyEditingId) {
+                await supabaseClient.from('families').update({ name, adults, kids }).eq('id', isFamilyEditingId).eq('group_password', groupPass);
+                isFamilyEditingId = null;
+                document.getElementById('familyFormTitle').innerHTML = `<i data-lucide="user-plus" class="w-5 h-5 text-indigo-500"></i> Familie hinzufügen`;
+                document.getElementById('saveFamilyBtn').innerHTML = `<i data-lucide="plus" class="w-4 h-4"></i> Familie speichern`;
+                document.getElementById('cancelFamilyEditBtn').classList.add('hidden');
+            } else {
+                await supabaseClient.from('families').insert([{ name, adults, kids, group_password: groupPass }]);
+            }
+
             document.getElementById('familyForm').reset();
+            document.getElementById('familyId').value = '';
             fetchData();
         });
 
@@ -372,11 +389,38 @@
         });
 
         async function deleteFamily(id) {
-            if(confirm("Familie löschen?")) {
-                await supabaseClient.from('families').delete().eq('id', id);
+            const family = families.find(f => f.id === id);
+            const familyName = family ? family.name : 'Diese Familie';
+            if (confirm(`Familie "${familyName}" wirklich löschen? Alle Ausgaben dieser Familie werden ebenfalls entfernt.`)) {
+                await supabaseClient.from('expenses').delete().eq('payer_id', id).eq('group_password', groupPass);
+                await supabaseClient.from('families').delete().eq('id', id).eq('group_password', groupPass);
                 fetchData();
             }
         }
+
+        function editFamily(id) {
+            const family = families.find(f => f.id === id);
+            if (!family) return;
+            isFamilyEditingId = id;
+            document.getElementById('familyId').value = id;
+            document.getElementById('familyName').value = family.name;
+            document.getElementById('adults').value = family.adults;
+            document.getElementById('kids').value = family.kids;
+            document.getElementById('familyFormTitle').innerHTML = `<i data-lucide="edit-3" class="w-5 h-5 text-amber-500"></i> Familie bearbeiten`;
+            document.getElementById('saveFamilyBtn').innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> Änderungen speichern`;
+            document.getElementById('cancelFamilyEditBtn').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        document.getElementById('cancelFamilyEditBtn').addEventListener('click', () => {
+            isFamilyEditingId = null;
+            document.getElementById('familyForm').reset();
+            document.getElementById('familyId').value = '';
+            document.getElementById('familyFormTitle').innerHTML = `<i data-lucide="user-plus" class="w-5 h-5 text-indigo-500"></i> Familie hinzufügen`;
+            document.getElementById('saveFamilyBtn').innerHTML = `<i data-lucide="plus" class="w-4 h-4"></i> Familie speichern`;
+            document.getElementById('cancelFamilyEditBtn').classList.add('hidden');
+            lucide.createIcons();
+        });
 
         function updateUI() {
             const totalCosts = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
@@ -417,7 +461,10 @@
                         <h4 class="font-bold text-slate-800">${f.name}</h4>
                         <p class="text-xs text-slate-500">👥 ${f.adults} Erw. / ${f.kids} Kinder</p>
                     </div>
-                    <button onclick="deleteFamily('${f.id}')" class="text-slate-400 hover:text-red-500 p-2 rounded-lg transition"><i data-lucide="trash" class="w-4 h-4"></i></button>`;
+                    <div class="flex items-center gap-1">
+                        <button onclick="editFamily('${f.id}')" class="text-slate-500 hover:text-amber-600 p-2 rounded-lg transition"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                        <button onclick="deleteFamily('${f.id}')" class="text-slate-400 hover:text-red-500 p-2 rounded-lg transition"><i data-lucide="trash" class="w-4 h-4"></i></button>
+                    </div>`;
                 familiesList.appendChild(card);
             });
 
