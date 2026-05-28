@@ -162,8 +162,24 @@
                     </form>
                 </div>
                 <div class="md:col-span-2 bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                    <h2 class="text-lg font-bold mb-4 text-slate-700">Chronologische Ausgabenliste</h2>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 pb-4 border-b border-slate-200">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-700">Chronologische Ausgabenliste</h2>
+                        </div>
+                        <div class="w-full sm:w-48">
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nach Familie filtern</label>
+                            <select id="expenseFilter" class="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-sm focus:outline-indigo-500">
+                                <option value="">Alle Familien anzeigen</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="overflow-x-auto">
+                        <div class="sticky top-0 bg-white z-10 border-b-2 border-emerald-500 mb-2">
+                            <div class="flex justify-between items-center px-3 py-3">
+                                <span class="text-sm font-semibold text-slate-600">Gesamt-Ausgaben:</span>
+                                <span class="text-lg font-bold text-emerald-600" id="filteredTotalExpenses">0,00 €</span>
+                            </div>
+                        </div>
                         <table class="w-full text-left text-sm">
                             <thead class="bg-slate-50 text-slate-500 uppercase text-xs border-b border-slate-200">
                                 <tr>
@@ -197,7 +213,8 @@
                         <thead class="bg-slate-50 text-slate-500 uppercase text-xs border-b border-slate-200">
                             <tr>
                                 <th class="p-3">Familie</th>
-                                <th class="p-3 text-center">Gewichtung (E/K)</th>
+                                <th class="p-3 text-center">Personen (E/K)</th>
+                                <th class="p-3 text-center">Anteile</th>
                                 <th class="p-3 text-right">Ausgelegt (€)</th>
                                 <th class="p-3 text-right">Soll-Anteil (€)</th>
                                 <th class="p-3 text-right">Differenz (+/-)</th>
@@ -226,8 +243,10 @@
         let expenses = [];
         let isEditingId = null;
         let isFamilyEditingId = null;
+        let expenseFilterId = "";
 
         const expensePayerSelect = document.getElementById('expensePayer');
+        const expenseFilter = document.getElementById('expenseFilter');
         document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -353,11 +372,20 @@
                 isEditingId = null;
                 document.getElementById('submitExpenseBtn').innerText = "Ausgabe eintragen";
                 document.getElementById('cancelEditBtn').classList.add('hidden');
+                if (expenseFilterId) {
+                    expensePayerSelect.disabled = true;
+                } else {
+                    expensePayerSelect.disabled = false;
+                }
             } else {
                 await supabaseClient.from('expenses').insert([{ description: desc, amount, date, payer_id: payerId, group_password: groupPass }]);
             }
             document.getElementById('expenseForm').reset();
             document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
+            if (expenseFilterId) {
+                expensePayerSelect.value = expenseFilterId;
+                expensePayerSelect.disabled = true;
+            }
             fetchData();
         });
 
@@ -376,6 +404,9 @@
             document.getElementById('expenseAmount').value = exp.amount;
             document.getElementById('expenseDate').value = exp.date;
             expensePayerSelect.value = exp.payer_id;
+            if (expenseFilterId) {
+                expensePayerSelect.disabled = true;
+            }
             document.getElementById('submitExpenseBtn').innerText = "Änderung speichern";
             document.getElementById('cancelEditBtn').classList.remove('hidden');
         }
@@ -386,6 +417,12 @@
             document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
             document.getElementById('submitExpenseBtn').innerText = "Ausgabe eintragen";
             document.getElementById('cancelEditBtn').classList.add('hidden');
+            if (expenseFilterId) {
+                expensePayerSelect.value = expenseFilterId;
+                expensePayerSelect.disabled = true;
+            } else {
+                expensePayerSelect.disabled = false;
+            }
         });
 
         async function deleteFamily(id) {
@@ -422,6 +459,15 @@
             lucide.createIcons();
         });
 
+        expenseFilter.addEventListener('change', (e) => {
+            expenseFilterId = e.target.value;
+            if (!expenseFilterId) {
+                document.getElementById('expenseForm').reset();
+                document.getElementById('expenseDate').value = new Date().toISOString().substring(0, 10);
+            }
+            updateUI();
+        });
+
         function updateUI() {
             const totalCosts = expenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
             const totalShares = families.reduce((sum, f) => sum + calculateFamilyShares(f), 0);
@@ -451,6 +497,20 @@
             });
             if (families.some(f => f.id === currentPayer)) expensePayerSelect.value = currentPayer;
 
+            expenseFilter.innerHTML = '<option value="">Alle Familien anzeigen</option>';
+            families.forEach(f => {
+                const opt = document.createElement('option'); opt.value = f.id; opt.textContent = f.name;
+                expenseFilter.appendChild(opt);
+            });
+            expenseFilter.value = expenseFilterId;
+
+            if (expenseFilterId) {
+                expensePayerSelect.value = expenseFilterId;
+                expensePayerSelect.disabled = true;
+            } else {
+                expensePayerSelect.disabled = false;
+            }
+
             const familiesList = document.getElementById('familiesList');
             familiesList.innerHTML = '';
             families.forEach(f => {
@@ -468,9 +528,15 @@
                 familiesList.appendChild(card);
             });
 
+            const filteredExpenses = expenseFilterId 
+                ? expenses.filter(exp => exp.payer_id === expenseFilterId)
+                : expenses;
+            const filteredTotal = filteredExpenses.reduce((sum, exp) => sum + parseFloat(exp.amount), 0);
+            document.getElementById('filteredTotalExpenses').innerText = filteredTotal.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+
             const expensesTableBody = document.getElementById('expensesTableBody');
             expensesTableBody.innerHTML = '';
-            [...expenses].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(exp => {
+            [...filteredExpenses].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(exp => {
                 const payer = families.find(f => f.id === exp.payer_id);
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -492,11 +558,20 @@
             families.forEach(f => paidByFamily[f.id] = 0);
             expenses.forEach(exp => { if (paidByFamily[exp.payer_id] !== undefined) paidByFamily[exp.payer_id] += parseFloat(exp.amount); });
 
+            let totalPaid = 0;
+            let totalShouldPay = 0;
+            let totalDiff = 0;
+
             families.forEach(f => {
                 const famShares = calculateFamilyShares(f);
                 const targetCost = totalShares > 0 ? (totalCosts / totalShares) * famShares : 0;
                 const paid = paidByFamily[f.id] || 0;
                 const diff = paid - targetCost;
+                
+                totalPaid += paid;
+                totalShouldPay += targetCost;
+                totalDiff += diff;
+                
                 const tr = document.createElement('tr');
                 let diffClass = "text-slate-500"; let prefix = "";
                 if (diff > 0.01) { diffClass = "text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded"; prefix = "+"; }
@@ -505,11 +580,25 @@
                 tr.innerHTML = `
                     <td class="p-3 font-bold">${f.name}</td>
                     <td class="p-3 text-center">${f.adults} E / ${f.kids} K</td>
+                    <td class="p-3 text-center font-semibold">${famShares.toFixed(1)}</td>
                     <td class="p-3 text-right">${paid.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
                     <td class="p-3 text-right text-slate-400">${targetCost.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
                     <td class="p-3 text-right"><span class="${diffClass}">${prefix}${diff.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span></td>`;
                 reportTableBody.appendChild(tr);
             });
+
+            const trSum = document.createElement('tr');
+            trSum.className = "bg-slate-100 font-bold border-t-2 border-slate-300";
+            const totalAdults = families.reduce((sum, f) => sum + parseInt(f.adults), 0);
+            const totalKids = families.reduce((sum, f) => sum + parseInt(f.kids), 0);
+            trSum.innerHTML = `
+                <td class="p-3">Summe</td>
+                <td class="p-3 text-center">${totalAdults} E / ${totalKids} K</td>
+                <td class="p-3 text-center font-semibold">${totalShares.toFixed(1)}</td>
+                <td class="p-3 text-right">${totalPaid.toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</td>
+                <td class="p-3"></td>
+                <td class="p-3"></td>`;
+            reportTableBody.appendChild(trSum);
             lucide.createIcons();
         }
     </script>
