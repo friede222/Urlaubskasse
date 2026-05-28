@@ -180,18 +180,20 @@
                                 <span class="text-lg font-bold text-emerald-600" id="filteredTotalExpenses">0,00 €</span>
                             </div>
                         </div>
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-50 text-slate-500 uppercase text-xs border-b border-slate-200">
-                                <tr>
-                                    <th class="p-3">Datum</th>
-                                    <th class="p-3">Beschreibung</th>
-                                    <th class="p-3">Zahler</th>
-                                    <th class="p-3 text-right">Betrag</th>
-                                    <th class="p-3 text-center">Aktionen</th>
-                                </tr>
-                            </thead>
-                            <tbody id="expensesTableBody" class="divide-y divide-slate-100"></tbody>
-                        </table>
+                        <div class="max-h-[45vh] overflow-y-auto border border-slate-100 rounded-xl">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-slate-50 text-slate-500 uppercase text-xs border-b border-slate-200">
+                                    <tr>
+                                        <th class="p-3 sticky top-0 bg-slate-50 z-10">Datum</th>
+                                        <th class="p-3 sticky top-0 bg-slate-50 z-10">Beschreibung</th>
+                                        <th class="p-3 sticky top-0 bg-slate-50 z-10">Zahler</th>
+                                        <th class="p-3 text-right sticky top-0 bg-slate-50 z-10">Betrag</th>
+                                        <th class="p-3 text-center sticky top-0 bg-slate-50 z-10">Aktionen</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expensesTableBody" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
